@@ -12,6 +12,11 @@ public class XeroInvoiceClient : IExternalInvoiceClient
     private readonly SecretClient _secretClient;
     private readonly ILogger<XeroInvoiceClient> _logger;
     private readonly string _tenantId;
+    private readonly string _accessTokenSecretName;
+    private readonly string _defaultAccountCode;
+    private string? _cachedToken;
+    private DateTimeOffset _tokenExpiry = DateTimeOffset.MinValue;
+    private readonly TimeSpan _tokenCacheDuration;
 
     public XeroInvoiceClient(
         HttpClient httpClient,
@@ -23,8 +28,12 @@ public class XeroInvoiceClient : IExternalInvoiceClient
         _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tenantId = configuration["Xero:TenantId"] ?? throw new ArgumentException("Xero:TenantId not configured");
-        
-        _httpClient.BaseAddress = new Uri("https://api.xero.com/api.xro/2.0/");
+        _accessTokenSecretName = configuration["Xero:AccessTokenSecretName"] ?? "XeroAccessToken";
+        _defaultAccountCode = configuration["Xero:DefaultAccountCode"] ?? throw new ArgumentException("Xero:DefaultAccountCode not configured");
+        _tokenCacheDuration = TimeSpan.FromMinutes(configuration.GetValue("Xero:TokenCacheMinutes", 30));
+
+        var baseUrl = configuration["Xero:BaseUrl"] ?? throw new ArgumentException("Xero:BaseUrl not configured");
+        _httpClient.BaseAddress = new Uri(baseUrl);
     }
 
     public async Task<InvoiceSyncResult> CreateInvoiceAsync(ExternalInvoice invoice, CancellationToken cancellationToken = default)
@@ -99,11 +108,16 @@ public class XeroInvoiceClient : IExternalInvoiceClient
 
     private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
     {
-        var secret = await _secretClient.GetSecretAsync("XeroAccessToken", cancellationToken: cancellationToken);
-        return secret.Value.Value;
+        if (_cachedToken != null && DateTimeOffset.UtcNow < _tokenExpiry)
+            return _cachedToken;
+
+        var secret = await _secretClient.GetSecretAsync(_accessTokenSecretName, cancellationToken: cancellationToken);
+        _cachedToken = secret.Value.Value;
+        _tokenExpiry = DateTimeOffset.UtcNow.Add(_tokenCacheDuration);
+        return _cachedToken;
     }
 
-    private static XeroInvoiceRequest MapToXeroInvoice(ExternalInvoice invoice)
+    private XeroInvoiceRequest MapToXeroInvoice(ExternalInvoice invoice)
     {
         return new XeroInvoiceRequest
         {
@@ -119,7 +133,7 @@ public class XeroInvoiceClient : IExternalInvoiceClient
                 Quantity = line.Quantity,
                 UnitAmount = line.UnitAmount,
                 LineAmount = line.LineTotal,
-                AccountCode = "200"
+                AccountCode = _defaultAccountCode
             }).ToList()
         };
     }

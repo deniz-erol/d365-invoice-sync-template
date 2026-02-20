@@ -10,13 +10,16 @@ public class InvoiceSyncFunction
 {
     private readonly IInvoiceSyncService _syncService;
     private readonly ILogger<InvoiceSyncFunction> _logger;
+    private readonly int _maxDeliveryCount;
 
     public InvoiceSyncFunction(
         IInvoiceSyncService syncService,
-        ILogger<InvoiceSyncFunction> logger)
+        ILogger<InvoiceSyncFunction> logger,
+        IConfiguration configuration)
     {
         _syncService = syncService ?? throw new ArgumentNullException(nameof(syncService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _maxDeliveryCount = configuration.GetValue("ServiceBus:MaxDeliveryCount", 3);
     }
 
     [Function(nameof(InvoiceSyncFunction))]
@@ -106,7 +109,7 @@ public class InvoiceSyncFunction
         string invoiceId)
     {
         // Check if we should retry based on delivery count
-        if (message.DeliveryCount < 3)
+        if (message.DeliveryCount < _maxDeliveryCount)
         {
             _logger.LogWarning(ex, "Exception processing invoice {InvoiceId}, abandoning for retry (attempt {Attempt})", 
                 invoiceId, message.DeliveryCount + 1);
