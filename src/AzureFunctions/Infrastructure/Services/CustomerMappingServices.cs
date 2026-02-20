@@ -11,8 +11,22 @@ public class InMemoryCustomerMappingService : ICustomerMappingService
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         
-        // In production, load from database or configuration
+        // Load mappings from configuration
         _mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        
+        var mappingsSection = configuration.GetSection("CustomerMappings");
+        foreach (var mapping in mappingsSection.GetChildren())
+        {
+            var d365Account = mapping.Key;
+            var externalId = mapping.Value;
+            if (!string.IsNullOrEmpty(d365Account) && !string.IsNullOrEmpty(externalId))
+            {
+                _mappings[d365Account] = externalId;
+                _logger.LogDebug("Loaded customer mapping: {D365Account} -> {ExternalId}", d365Account, externalId);
+            }
+        }
+        
+        _logger.LogInformation("Loaded {Count} customer mappings from configuration", _mappings.Count);
     }
 
     public Task<string> GetExternalContactIdAsync(string d365CustomerAccount, CancellationToken cancellationToken = default)
@@ -53,9 +67,10 @@ public class SqlCustomerMappingService : ICustomerMappingService
 
     public async Task<string> GetExternalContactIdAsync(string d365CustomerAccount, CancellationToken cancellationToken = default)
     {
-        // Implementation would query SQL database
-        // For template, returns same as in-memory
-        _logger.LogInformation("SQL mapping lookup for {Account}", d365CustomerAccount);
-        return d365CustomerAccount;
+        // TODO: Implement SQL query to lookup mapping
+        // Example: SELECT ExternalId FROM CustomerMappings WHERE D365Account = @account
+        
+        _logger.LogInformation("SQL mapping lookup for {Account} - Not yet implemented", d365CustomerAccount);
+        return await Task.FromResult(d365CustomerAccount);
     }
 }

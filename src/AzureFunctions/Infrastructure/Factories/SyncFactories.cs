@@ -37,7 +37,7 @@ public class QuickBooksSyncFactory : IInvoiceSyncFactory
         _services.GetRequiredService<QuickBooksInvoiceTransformer>();
 
     public IExternalInvoiceClient CreateClient() => 
-        throw new NotImplementedException("QuickBooks client not yet implemented");
+        _services.GetRequiredService<QuickBooksInvoiceClient>();
 }
 
 public class SyncFactoryResolver

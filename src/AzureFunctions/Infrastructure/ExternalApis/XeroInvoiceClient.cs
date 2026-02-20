@@ -6,7 +6,7 @@ using D365InvoiceSync.Domain.Models;
 
 namespace D365InvoiceSync.Infrastructure.ExternalApis;
 
-public class XeroInvoiceClient : IExternalInvoiceClient, IDisposable
+public class XeroInvoiceClient : IExternalInvoiceClient
 {
     private readonly HttpClient _httpClient;
     private readonly SecretClient _secretClient;
@@ -124,11 +124,6 @@ public class XeroInvoiceClient : IExternalInvoiceClient, IDisposable
         };
     }
 
-    public void Dispose()
-    {
-        _httpClient?.Dispose();
-        GC.SuppressFinalize(this);
-    }
 }
 
 // Xero API Models

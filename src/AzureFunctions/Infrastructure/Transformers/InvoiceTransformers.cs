@@ -12,11 +12,11 @@ public class XeroInvoiceTransformer : IInvoiceTransformer
         _customerMapping = customerMapping ?? throw new ArgumentNullException(nameof(customerMapping));
     }
 
-    public ExternalInvoice Transform(D365Invoice sourceInvoice)
+    public async Task<ExternalInvoice> TransformAsync(D365Invoice sourceInvoice, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sourceInvoice);
 
-        var contactId = _customerMapping.GetExternalContactIdAsync(sourceInvoice.CustomerAccount).GetAwaiter().GetResult();
+        var contactId = await _customerMapping.GetExternalContactIdAsync(sourceInvoice.CustomerAccount, cancellationToken);
 
         return new ExternalInvoice
         {
@@ -51,11 +51,11 @@ public class QuickBooksInvoiceTransformer : IInvoiceTransformer
         _customerMapping = customerMapping ?? throw new ArgumentNullException(nameof(customerMapping));
     }
 
-    public ExternalInvoice Transform(D365Invoice sourceInvoice)
+    public async Task<ExternalInvoice> TransformAsync(D365Invoice sourceInvoice, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sourceInvoice);
 
-        var contactId = _customerMapping.GetExternalContactIdAsync(sourceInvoice.CustomerAccount).GetAwaiter().GetResult();
+        var contactId = await _customerMapping.GetExternalContactIdAsync(sourceInvoice.CustomerAccount, cancellationToken);
 
         return new ExternalInvoice
         {

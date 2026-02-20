@@ -31,18 +31,19 @@ builder.Services.AddSingleton<ICustomerMappingService, InMemoryCustomerMappingSe
 builder.Services.AddSingleton<XeroInvoiceTransformer>();
 builder.Services.AddSingleton<QuickBooksInvoiceTransformer>();
 
-// External API Clients
+// External API Clients - HttpClient is managed by factory, don't dispose manually
 builder.Services.AddHttpClient<XeroInvoiceClient>((sp, client) =>
 {
-    // Base address is set in the client constructor
+    // Base address and headers configured in client constructor
 });
-builder.Services.AddSingleton<XeroInvoiceClient>(sp =>
+
+builder.Services.AddHttpClient<QuickBooksInvoiceClient>((sp, client) =>
 {
-    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(XeroInvoiceClient));
-    var secretClient = sp.GetRequiredService<SecretClient>();
-    var logger = sp.GetRequiredService<ILogger<XeroInvoiceClient>>();
-    return new XeroInvoiceClient(httpClient, secretClient, configuration, logger);
+    // Base address and headers configured in client constructor
 });
+
+builder.Services.AddSingleton<XeroInvoiceClient>();
+builder.Services.AddSingleton<QuickBooksInvoiceClient>();
 
 // Factories
 builder.Services.AddSingleton<SyncFactoryResolver>();

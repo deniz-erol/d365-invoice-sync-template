@@ -4,7 +4,7 @@ namespace D365InvoiceSync.Application.Interfaces;
 
 public interface IInvoiceTransformer
 {
-    ExternalInvoice Transform(D365Invoice sourceInvoice);
+    Task<ExternalInvoice> TransformAsync(D365Invoice sourceInvoice, CancellationToken cancellationToken = default);
 }
 
 public interface IExternalInvoiceClient

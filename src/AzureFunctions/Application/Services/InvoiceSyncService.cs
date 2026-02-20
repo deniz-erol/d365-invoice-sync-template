@@ -27,7 +27,7 @@ public class InvoiceSyncService : IInvoiceSyncService
 
         try
         {
-            var externalInvoice = _transformer.Transform(invoice);
+            var externalInvoice = await _transformer.TransformAsync(invoice, cancellationToken);
             var result = await _externalClient.CreateInvoiceAsync(externalInvoice, cancellationToken);
 
             if (result.Success)
