@@ -1,0 +1,39 @@
+# Build output
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# Azure Functions
+local.settings.json
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Dependencies
+node_modules/
+packages/
+
+# Secrets
+*.pfx
+*.key
+appsettings.Development.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test results
+TestResults/
+
+# Publish
+publish/
+*.pubxml
