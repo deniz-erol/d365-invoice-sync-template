@@ -78,4 +78,4 @@ MIT - See [LICENSE](LICENSE)
 
 ---
 
-**Built by [Deniz Erol](https://linkedin.com/in/denizerol95)** - Azure Integration Specialist with 3.5+ years building enterprise D365 integrations at DFDS.
+**Built by [Deniz Erol](https://linkedin.com/in/denizerol95)** - Azure Integration Specialist
